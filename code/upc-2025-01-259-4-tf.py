@@ -7,7 +7,6 @@ import warnings
 from datetime import datetime
 from tqdm import tqdm
 
-# configuracion de colores ansi para consola
 VERDE = '\033[92m'
 AZUL = '\033[94m'
 ROJO = '\033[91m'
@@ -371,82 +370,60 @@ def pre5_volumen_tendencia_tiempo(df):
     else:
         print(f"{ROJO}No se encontro la columna trending_date en los datos{ENDC}")
 
+
+
 def pre6_canales_mayor_menor_tendencia(df):
-    """Pregunta 6: Que Canales de YouTube son tendencia mas frecuentemente? Y cuales con menos frecuencia?"""
-    print(f"\n{AZUL}Pregunta 6: Que Canales de YouTube son tendencia mas frecuentemente? Y cuales con menos frecuencia?{ENDC}")
+    """analiza los canales con más apariciones en tendencias"""
+    print(f"\n{AZUL}pregunta 6: qué canales de youtube son tendencia más frecuentemente? y cuáles con menos frecuencia?{ENDC}")
     
-    # analizar distribucion de canales
+    # limpieza de nombres de canal
+    df['channel_title'] = df['channel_title'].str.strip()
+    df = df[df['channel_title'].astype(bool)]
+    
+    # análisis de frecuencia
     canales_trending = df['channel_title'].value_counts()
-    
-    # canales mas frecuentes
     top_canales = canales_trending.head(15)
-    
-    # canales menos frecuentes
+    top_channel = top_canales.index[0]
+    top_count = top_canales.iloc[0]
     canales_unicos = canales_trending[canales_trending == 1]
     
-    # crear visualizacion mejorada
-    fig = plt.figure(figsize=(16, 10))
+    plt.figure(figsize=(14, 8))
+    plt.rcParams['font.family'] = 'dejavu sans'
     
-    # subplot 1: top canales con barras horizontales
-    ax1 = plt.subplot(2, 1, 1)
-    colors = plt.cm.tab20(np.linspace(0, 1, len(top_canales)))
-    bars = ax1.barh(top_canales.index[::-1], top_canales.values[::-1], 
-                   color=colors, edgecolor='gray', linewidth=1.2, alpha=0.85)
+    colors = plt.cm.Blues(np.linspace(0.4, 0.8, len(top_canales)))
+    bars = plt.barh(top_canales.index[::-1], top_canales.values[::-1], 
+                   color=colors, edgecolor='navy', linewidth=1.2, alpha=0.8)
     
-    ax1.set_xlabel('Numero de videos en tendencia', fontsize=12, fontweight='bold')
-    ax1.set_title('Top 15 Canales con Mas Videos en Tendencia', 
-                  fontsize=14, fontweight='bold', pad=15)
-    ax1.grid(axis='x', alpha=0.3, linestyle='--')
-    
-    for i, bar in enumerate(bars):
-        ax1.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2,
-                f'{int(bar.get_width())}', va='center', ha='left', 
+    for bar in bars:
+        width = bar.get_width()
+        plt.text(width + 5, bar.get_y() + bar.get_height()/2,
+                f'{int(width)}', 
+                va='center', ha='left', 
                 fontsize=10, fontweight='bold')
     
-    # subplot 2: boxplot de distribucion
-    ax2 = plt.subplot(2, 1, 2)
-    
-    # crear datos para boxplot por categorias
-    categorias_canales = []
-    if len(canales_trending[canales_trending == 1]) > 0:
-        categorias_canales.append(('1 video', [1] * len(canales_trending[canales_trending == 1])))
-    if len(canales_trending[(canales_trending > 1) & (canales_trending <= 5)]) > 0:
-        categorias_canales.append(('2-5 videos', 
-                                 canales_trending[(canales_trending > 1) & (canales_trending <= 5)].values))
-    if len(canales_trending[(canales_trending > 5) & (canales_trending <= 10)]) > 0:
-        categorias_canales.append(('6-10 videos', 
-                                 canales_trending[(canales_trending > 5) & (canales_trending <= 10)].values))
-    if len(canales_trending[canales_trending > 10]) > 0:
-        categorias_canales.append(('Mas de 10', canales_trending[canales_trending > 10].values))
-    
-    box_data = [cat[1] for cat in categorias_canales]
-    box_labels = [cat[0] for cat in categorias_canales]
-    
-    bp = ax2.boxplot(box_data, labels=box_labels, patch_artist=True, 
-                     showmeans=True, meanline=True)
-    
-    # colorear cajas
-    colors = ['lightcoral', 'lightyellow', 'lightgreen', 'lightblue']
-    for patch, color in zip(bp['boxes'], colors[:len(bp['boxes'])]):
-        patch.set_facecolor(color)
-        patch.set_alpha(0.7)
-    
-    ax2.set_ylabel('Numero de videos por canal', fontsize=12, fontweight='bold')
-    ax2.set_xlabel('Categoria de canales', fontsize=12, fontweight='bold')
-    ax2.set_title('Distribucion del Numero de Videos en Tendencia por Canal', 
-                  fontsize=14, fontweight='bold', pad=15)
-    ax2.grid(True, alpha=0.3, linestyle='--')
-    
+    plt.xlabel('número de videos en tendencia', fontsize=12, fontweight='bold')
+    plt.ylabel('canales', fontsize=12, fontweight='bold')
+    plt.title('top 15 canales con más videos en tendencia', 
+             fontsize=14, fontweight='bold', pad=20)
+    plt.grid(axis='x', alpha=0.3, linestyle='--')
     plt.tight_layout()
+    
     filename = os.path.join(graficos_dir, '06_canales_tendencia_distribucion.png')
     plt.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
     plt.close()
     
-    print(f"Grafico guardado en: {MAGENTA}{filename}{ENDC}")
-    print(f"Canal con mas videos en tendencia: {VERDE}{top_canales.index[0]}{ENDC}")
-    print(f"Numero de videos: {VERDE}{top_canales.iloc[0]}{ENDC}")
-    print(f"Canales que aparecen solo una vez: {AMARILLO}{len(canales_unicos):,}{ENDC}")
-    print(f"Esto representa el {AMARILLO}{len(canales_unicos)/len(canales_trending)*100:.1f}%{ENDC} del total de canales")
+    print(f"\n{VERDE}resultados clave:{ENDC}")
+    print(f"canal con más videos en tendencia: {VERDE}{top_channel}{ENDC}")
+    print(f"número de videos en tendencia: {VERDE}{top_count}{ENDC}")
+    print(f"\n{VERDE}distribución de canales:{ENDC}")
+    print(f"- canales con 1 aparición: {AMARILLO}{len(canales_unicos):,}{ENDC} ({len(canales_unicos)/len(canales_trending)*100:.1f}%)")
+    print(f"- canales con 2-5 apariciones: {AMARILLO}{len(canales_trending[(canales_trending > 1) & (canales_trending <= 5)]):,}{ENDC}")
+    print(f"- canales con 6-10 apariciones: {AMARILLO}{len(canales_trending[(canales_trending > 5) & (canales_trending <= 10)]):,}{ENDC}")
+    print(f"- canales con más de 10 apariciones: {AMARILLO}{len(canales_trending[canales_trending > 10]):,}{ENDC}")
+    print(f"\n{VERDE}total de canales analizados: {AMARILLO}{len(canales_trending):,}{ENDC}")
+    print(f"\ngráfico guardado en: {MAGENTA}{filename}{ENDC}")
+
+
 
 def pre7_estados_vistas_interacciones(df):
     """Pregunta 7: En que Estados se presenta el mayor numero de Vistas, Me gusta y No me gusta?"""
@@ -726,14 +703,9 @@ def pre9_prediccion_vistas_likes_dislikes(df):
     print(f"El modelo explica el {VERDE}{max(rf_r2, lr_r2)*100:.1f}%{ENDC} de la variabilidad en las vistas")
 
 def main():
-    """funcion principal que ejecuta todo el analisis"""
-    print(f"{AZUL}Iniciando analisis completo de YouTube Trending Videos India{ENDC}")
-    print(f"{AZUL}Aplicando metodologia CRISP-DM{ENDC}")
     
-    # cargar y preparar datos
     df = cargar_y_limpiar_datos()
     
-    # ejecutar todas las preguntas con progress bar
     preguntas = [
         ("Pregunta 1: Categorias de mayor tendencia", pre1_categorias_tendencia),
         ("Pregunta 2: Categorias que mas/menos gustan", pre2_categorias_mayor_menor_gusto),
@@ -746,7 +718,6 @@ def main():
         ("Pregunta 9: Prediccion de metricas", pre9_prediccion_vistas_likes_dislikes)
     ]
     
-    print(f"\n{AZUL}Ejecutando analisis de requerimientos...{ENDC}")
     with tqdm(total=len(preguntas), desc="Procesando preguntas") as pbar:
         for descripcion, funcion in preguntas:
             funcion(df)
