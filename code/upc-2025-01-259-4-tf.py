@@ -152,10 +152,8 @@ def pre2_categorias_mayor_menor_gusto(df):
     top_5_mas_gustan = likes_por_categoria.head(5)
     top_5_menos_gustan = likes_por_categoria.tail(5)
     
-    # crear figura con mejor diseño
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
     
-    # colores degradados
     colors_mas = plt.cm.Greens(np.linspace(0.5, 0.9, 5))
     colors_menos = plt.cm.Reds(np.linspace(0.5, 0.9, 5))
     
@@ -209,10 +207,8 @@ def pre3_mejor_ratio_likes_dislikes(df):
     
     top_10_ratio = ratio_por_categoria.head(10)
     
-    # crear grafico de barras horizontales con estilo mejorado
     plt.figure(figsize=(12, 8))
     
-    # usar colormap degradado
     colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(top_10_ratio)))
     
     bars = plt.barh(top_10_ratio['categoria_nombre'][::-1], 
@@ -224,7 +220,6 @@ def pre3_mejor_ratio_likes_dislikes(df):
               fontsize=16, fontweight='bold', pad=20)
     plt.grid(axis='x', alpha=0.3, linestyle='--')
     
-    # agregar valores en las barras con formato mejorado
     for i, bar in enumerate(bars):
         ratio_val = bar.get_width()
         percentage = ratio_val * 100
@@ -243,6 +238,7 @@ def pre3_mejor_ratio_likes_dislikes(df):
     print(f"Ratio: {VERDE}{top_10_ratio.iloc[0]['like_dislike_ratio']:.3f}{ENDC}")
     print(f"Esto significa que {VERDE}{top_10_ratio.iloc[0]['like_dislike_ratio']*100:.1f}%{ENDC} de las interacciones son likes")
 
+
 def pre4_ratio_vistas_comentarios(df):
     """Pregunta 4: Que categorias de videos tienen la mejor proporcion (ratio) de Vistas / Comentarios?"""
     print(f"\n{AZUL}Pregunta 4: Que categorias de videos tienen la mejor proporcion (ratio) de Vistas / Comentarios?{ENDC}")
@@ -260,7 +256,7 @@ def pre4_ratio_vistas_comentarios(df):
     
     top_10_comentarios = ratio_vistas_comentarios.head(10)
     
-    # crear scatterplot mejorado
+    # crear scatterplot
     plt.figure(figsize=(14, 9))
     
     # normalizar tamaños para mejor visualizacion
@@ -272,7 +268,6 @@ def pre4_ratio_vistas_comentarios(df):
                          c=range(len(top_10_comentarios)), 
                          cmap='plasma', alpha=0.7, edgecolors='black', linewidth=1.5)
     
-    # agregar etiquetas mejoradas
     for i, row in top_10_comentarios.iterrows():
         plt.annotate(row['categoria_nombre'], 
                     (row['views_comments_ratio'], row['comments_per_view'] * 100),
@@ -286,7 +281,6 @@ def pre4_ratio_vistas_comentarios(df):
               fontsize=16, fontweight='bold', pad=20)
     plt.grid(True, alpha=0.3, linestyle='--')
     
-    # agregar colorbar
     cbar = plt.colorbar(scatter)
     cbar.set_label('Ranking', fontsize=11)
     
@@ -374,7 +368,7 @@ def pre5_volumen_tendencia_tiempo(df):
 
 def pre6_canales_mayor_menor_tendencia(df):
     """analiza los canales con más apariciones en tendencias"""
-    print(f"\n{AZUL}pregunta 6: qué canales de youtube son tendencia más frecuentemente? y cuáles con menos frecuencia?{ENDC}")
+    print(f"\n{AZUL}pregunta 6: ¿Qué canales de youtube son tendencia más frecuentemente? y cuáles con menos frecuencia?{ENDC}")
     
     # limpieza de nombres de canal
     df['channel_title'] = df['channel_title'].str.strip()
@@ -440,7 +434,7 @@ def pre7_estados_vistas_interacciones(df):
         
         estados_stats = estados_stats.sort_values('views', ascending=False).head(12)
         
-        # crear stacked bar chart mejorado
+        # stacked bar chart
         fig, ax = plt.subplots(figsize=(15, 9))
         
         width = 0.75
@@ -459,7 +453,6 @@ def pre7_estados_vistas_interacciones(df):
         p3 = ax.bar(x, dislikes_m, width, bottom=views_m + likes_m, label='Dislikes (M)', 
                    color='lightcoral', alpha=0.8, edgecolor='darkred', linewidth=1.2)
         
-        # personalizar ejes
         ax.set_xlabel('Estados', fontsize=13, fontweight='bold')
         ax.set_ylabel('Cantidad (Millones)', fontsize=13, fontweight='bold')
         ax.set_title('Top 12 Estados por Vistas, Likes y Dislikes\n(valores en millones)', 
@@ -493,6 +486,8 @@ def pre7_estados_vistas_interacciones(df):
     else:
         print(f"{ROJO}No se encontro la columna state en los datos{ENDC}")
 
+
+
 def pre8_tendencia_vs_comentarios_positivos(df):
     """Pregunta 8: Los videos en tendencia son los que mayor cantidad de comentarios positivos reciben?"""
     print(f"\n{AZUL}Pregunta 8: Los videos en tendencia son los que mayor cantidad de comentarios positivos reciben?{ENDC}")
@@ -511,7 +506,7 @@ def pre8_tendencia_vs_comentarios_positivos(df):
             data_boxplot.append(data)
             labels_boxplot.append(f'{tier.capitalize()}\nrendimiento')
     
-    # crear boxplot mejorado
+    # boxplot
     bp = ax1.boxplot(data_boxplot, labels=labels_boxplot, patch_artist=True, 
                      showmeans=True, meanline=True, showfliers=False)
     
@@ -530,7 +525,7 @@ def pre8_tendencia_vs_comentarios_positivos(df):
     # agregar estadisticas
     stats_comentarios = df.groupby('performance_tier')['comment_count'].agg(['mean', 'median', 'count'])
     
-    # crear segundo grafico: scatter plot con tendencia
+    # segundo grafico: scatter plot con tendencia
     ax2.scatter(df['views']/1e6, df['comment_count'], 
                alpha=0.3, s=30, c=df['likes'], cmap='viridis')
     
@@ -547,7 +542,7 @@ def pre8_tendencia_vs_comentarios_positivos(df):
     ax2.grid(True, alpha=0.3, linestyle='--')
     ax2.legend()
     
-    # agregar texto con estadisticas en el primer grafico
+    # estadisticas en el primer grafico
     textstr = 'Estadisticas promedio:\n'
     for tier, stats in stats_comentarios.iterrows():
         textstr += f'{tier.capitalize()}: {stats["mean"]:.0f} comentarios\n'
@@ -571,11 +566,12 @@ def pre8_tendencia_vs_comentarios_positivos(df):
     correlacion = df['views'].corr(df['comment_count'])
     print(f"Correlacion vistas-comentarios: {VERDE}{correlacion:.3f}{ENDC}")
 
+
+
 def pre9_prediccion_vistas_likes_dislikes(df):
     """Pregunta 9: Es factible predecir el numero de Vistas o Me gusta o No me gusta?"""
     print(f"\n{AZUL}Pregunta 9: Es factible predecir el numero de Vistas o Me gusta o No me gusta?{ENDC}")
     
-    # importar librerias para machine learning
     from sklearn.model_selection import train_test_split
     from sklearn.ensemble import RandomForestRegressor
     from sklearn.linear_model import LinearRegression
@@ -625,7 +621,7 @@ def pre9_prediccion_vistas_likes_dislikes(df):
     rf_mae = mean_absolute_error(y_test, y_pred_rf)
     lr_mae = mean_absolute_error(y_test, y_pred_lr)
     
-    # crear figura con multiples subplots
+    # figura con multiples subplots
     fig = plt.figure(figsize=(18, 12))
     
     # subplot 1: random forest
@@ -701,6 +697,8 @@ def pre9_prediccion_vistas_likes_dislikes(df):
     print(f"\nConclusion: {VERDE}SI es factible predecir vistas{ENDC}")
     print(f"Mejor modelo: {VERDE}{mejor_modelo}{ENDC}")
     print(f"El modelo explica el {VERDE}{max(rf_r2, lr_r2)*100:.1f}%{ENDC} de la variabilidad en las vistas")
+
+
 
 def main():
     
