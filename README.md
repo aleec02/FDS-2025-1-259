@@ -1,7 +1,5 @@
-# FDS-2025-1-259
+# FDS-2025-1-259: Análisis de Tendencias de Videos en YouTube India  
 
-# Análisis de Tendencias de Videos en YouTube India  
-Sección 259 - Grupo 4 | Fundamentos de Data Science | UPC 2025-1
 
 ## Objetivo del Proyecto
 
@@ -79,7 +77,6 @@ Las visualizaciones generadas fueron exportadas automáticamente a la carpeta `d
 | 06_canales_tendencia_distribucion.png | Canales con más y menos videos en tendencia      |
 | 07_estados_vistas_interacciones.png | Comparación entre estados según métricas clave      |
 
-Además, se generó el archivo `07_estados_metricas.csv` con métricas por estado para potencial análisis geoespacial.
 
 ## Estructura del Repositorio
 
