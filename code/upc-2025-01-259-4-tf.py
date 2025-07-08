@@ -941,7 +941,6 @@ Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a
         print(f"{ROJO}Saliendo del programa...{ENDC}")
         exit(1)
     
-    # Cargar y limpiar datos
     df = cargar_y_limpiar_datos()
     
     # Preguntas de investigación
@@ -1022,14 +1021,7 @@ ARCHIVOS GENERADOS:
 - Datos procesados: {VERDE}Guardados en /data/processed/{ENDC}
 - Mapa HTML interactivo: {VERDE}Guardado en /data/outputs/{ENDC}
 
-{VERDE}METODOLOGÍA CRISP-DM - 6 FASES:{ENDC}
-1. COMPRENSIÓN DEL NEGOCIO: {VERDE}COMPLETADA{ENDC}
-2. COMPRENSIÓN DE LOS DATOS: {VERDE}COMPLETADA{ENDC}
-3. PREPARACIÓN DE LOS DATOS: {VERDE}COMPLETADA{ENDC}
-4. MODELADO: {VERDE}COMPLETADO{ENDC}
-5. EVALUACIÓN: {VERDE}COMPLETADA{ENDC}
-6. DESPLIEGUE: {VERDE}COMPLETADO{ENDC}
-""")
+
 
 if __name__ == "__main__":
     main()
