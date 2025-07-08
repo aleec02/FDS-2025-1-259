@@ -1,0 +1,988 @@
+
+============================================================
+ANÁLISIS DE VIDEOS DE YOUTUBE EN TENDENCIA
+============================================================
+
+# Proyecto de Ciencia de Datos - Metodología CRISP-DM
+
+## Objetivo del Proyecto
+Una consultora internacional, con sede en Lima, solicita desarrollar un proyecto de Ciencia 
+de Datos con la finalidad de conocer las tendencias de los videos de YouTube en países importantes. 
+
+El proyecto responde a la necesidad de su cliente, una importante empresa de marketing 
+digital, que desea obtener respuestas a varios requerimientos de información sobre:
+- Categorías de videos más populares
+- Patrones temporales de tendencias
+- Análisis geográfico de engagement
+- Predicción de métricas de rendimiento
+
+## Alcance
+Análisis de datos de YouTube para el país: [92mIndia[0m ([92mIN[0m)
+Aplicando la metodología [94mCRISP-DM[0m para crear conocimiento y valor a partir de los datos.
+
+## Conocimiento a Extraer
+- Identificar patrones en las categorías de videos más exitosas
+- Entender la evolución temporal de las tendencias
+- Analizar el comportamiento geográfico del engagement
+- Desarrollar modelos predictivos para métricas clave
+
+
+## Equipo de Trabajo - Sección [94m259[0m
+------------------------------
+• [94mBusiness Project Sponsor[0m: Responsable de definir objetivos de negocio
+• [94mData Science[0m: Líder técnico del proyecto de ciencia de datos
+• [94mData Engineer[0m: Responsable de preparación y limpieza de datos
+• [94mData Analyst[0m: Responsable de análisis exploratorio y visualizaciones
+
+
+## Metodología [94mCRISP-DM[0m
+Este proyecto sigue las [92m6 fases[0m de la metodología CRISP-DM:
+1. Comprensión del Negocio
+2. Comprensión de los Datos  
+3. Preparación de los Datos
+4. Modelado
+5. Evaluación
+6. Despliegue
+
+
+============================================================
+1. COMPRENSIÓN DEL NEGOCIO
+============================================================
+
+### Objetivos del Proyecto
+El objetivo principal es analizar las tendencias de videos de YouTube para generar insights
+accionables que permitan a una empresa de marketing digital:
+
+1. Identificar las categorías de contenido más exitosas
+2. Entender patrones temporales de viralidad
+3. Optimizar estrategias de contenido basadas en datos
+4. Predecir el rendimiento potencial de videos
+
+### Objetivos de Data Science
+Traducir los objetivos de negocio en metas técnicas medibles:
+
+**Variables Independientes (Features):**
+- [95mcategory_id[0m: Categoría del video
+- [95mpublish_time[0m: Fecha y hora de publicación
+- [95mchannel_title[0m: Canal que publica el video
+- [95mtags[0m: Etiquetas descriptivas
+- [95mstate[0m: Ubicación geográfica
+- [95mlat, lon[0m: Coordenadas geográficas
+
+**Variables Dependientes (Target):**
+- [95mviews[0m: Número de visualizaciones (principal métrica de éxito)
+- [95mlikes[0m: Número de "me gusta"
+- [95mdislikes[0m: Número de "no me gusta" 
+- [95mcomment_count[0m: Número de comentarios
+
+**Métricas de Éxito:**
+- [94mLike/Dislike Ratio[0m = likes / (likes + dislikes)
+- [94mEngagement Rate[0m = (likes + dislikes + comment_count) / views
+- [94mViews/Comments Ratio[0m = views / comment_count
+
+
+### Preguntas de Investigación:
+[92m1.[0m ¿Qué categorías de videos son las de mayor tendencia?
+[92m2.[0m ¿Qué categorías de videos son los que más gustan? ¿Y las que menos gustan?
+[92m3.[0m ¿Qué categorías de videos tienen la mejor proporción (ratio) de 'Me gusta' / 'No me gusta'?
+[92m4.[0m ¿Qué categorías de videos tienen la mejor proporción (ratio) de 'Vistas' / 'Comentarios'?
+[92m5.[0m ¿Cómo ha cambiado el volumen de los videos en tendencia a lo largo del tiempo?
+[92m6.[0m ¿Qué Canales de YouTube son tendencia más frecuentemente? ¿Y cuáles con menos frecuencia?
+[92m7.[0m ¿En qué Estados se presenta el mayor número de 'Vistas', 'Me gusta' y 'No me gusta'?
+[92m8.[0m ¿Los videos en tendencia son los que mayor cantidad de comentarios positivos reciben?
+[92m9.[0m ¿Es factible predecir el número de 'Vistas' o 'Me gusta' o 'No me gusta'?
+
+============================================================
+CONFIGURACIÓN DE ARCHIVOS Y VALIDACIÓN
+============================================================
+
+Configuración actual del proyecto:
+País: [92mIndia[0m ([92mIN[0m)
+Archivo de videos: [95mINvideos_cc50_202101.csv[0m
+Archivo de categorías: [95mIN_category_id.json[0m
+Carpeta de datos: [95m./data/all-data[0m
+Carpeta procesados: [95m./data/processed[0m
+Carpeta de salidas: [95m./data/outputs[0m
+
+Validación de archivos:
+Videos CSV: [92mEncontrado[0m - [95mINvideos_cc50_202101.csv[0m
+Categorías JSON: [92mEncontrado[0m - [95mIN_category_id.json[0m
+
+[92mTodos los archivos están disponibles[0m para el análisis.
+
+============================================================
+2. COMPRENSIÓN DE LOS DATOS
+============================================================
+
+Esta fase implica la recolección, descripción y exploración inicial de los datos.
+Se examina la estructura, calidad y características principales del dataset.
+
+
+### 2.1 Recolectar los Datos Iniciales
+----------------------------------------
+Iniciando carga de datos para [92mIndia[0m...
+
+Cargando datos de videos desde [95mINvideos_cc50_202101.csv[0m...
+Datos de videos cargados exitosamente: [92m38,533 registros[0m
+Cargando datos de categorías desde [95mIN_category_id.json[0m...
+Datos de categorías cargados exitosamente: [92m31 categorías[0m
+Mapeo de categorías creado: [92m31 categorías mapeadas[0m
+
+### 2.2 Descripción de los Datos
+-----------------------------------
+
+#### Estructura General del Dataset
+
+Información del Dataset de Videos
+---------------------------------
+Forma del dataset: [92m38,533 filas[0m × [92m20 columnas[0m
+Uso de memoria: [94m106.47 MB[0m
+Filas duplicadas: [94m577[0m
+
+Información de columnas:
+Columna                   Tipo            No-Null    % Faltante
+-----------------------------------------------------------------
+video_id                  object          38,528     0.0       
+trending_date             object          37,617     2.4       
+title                     object          37,535     2.6       
+channel_title             object          37,422     2.9       
+category_id               object          37,389     3.0       
+publish_time              object          37,376     3.0       
+tags                      object          37,364     3.0       
+views                     object          37,357     3.1       
+likes                     float64         37,352     3.1       
+dislikes                  float64         37,352     3.1       
+comment_count             float64         37,352     3.1       
+thumbnail_link            object          37,352     3.1       
+comments_disabled         object          37,352     3.1       
+ratings_disabled          object          37,352     3.1       
+video_error_or_removed    object          37,352     3.1       
+description               object          36,791     4.5       
+state                     object          38,533     0.0       
+lat                       float64         38,533     0.0       
+lon                       float64         38,533     0.0       
+geometry                  object          38,533     0.0       
+Datos guardados: [92mdatos_originales[0m - Dataset original sin procesar
+Ubicación: [95m./data/processed\IN_datos_originales.csv[0m
+
+#### Muestra de Datos
+Primeras [92m5 filas[0m del dataset:
+      video_id trending_date  \
+0  kzwfHumJyYc      17.14.11   
+1  zUZ1z7FwLc8      17.14.11   
+2  10L1hZ9qa58      17.14.11   
+3  N1vE8iiEg64      17.14.11   
+4  kJzGH0PVQHQ      17.14.11   
+
+                                               title    channel_title  \
+0  Sharry Mann: Cute Munda ( Song Teaser) | Parmi...  Lokdhun Punjabi   
+1  पीरियड्स के समय, पेट पर पति करता ऐसा, देखकर दं...          HJ NEWS   
+2  Stylish Star Allu Arjun @ ChaySam Wedding Rece...             TFPC   
+3                     Eruma Saani | Tamil vs English      Eruma Saani   
+4  why Samantha became EMOTIONAL @ Samantha naga ...       Filmylooks   
+
+  category_id              publish_time  \
+0           1  2017-11-12T12:20:39.000Z   
+1          25  2017-11-13T05:43:56.000Z   
+2          24  2017-11-12T15:48:08.000Z   
+3          23  2017-11-12T07:08:48.000Z   
+4          24  2017-11-13T01:14:16.000Z   
+
+                                                tags    views    likes  \
+0  sharry mann|"sharry mann new song"|"sharry man...  1096327  33966.0   
+1  पीरियड्स के समय|"पेट पर पति करता ऐसा"|"देखकर द...   590101    735.0   
+2  Stylish Star Allu Arjun @ ChaySam Wedding Rece...   473988   2011.0   
+3  Eruma Saani|"Tamil Comedy Videos"|"Films"|"Mov...  1242680  70353.0   
+4  Filmylooks|"latest news"|"telugu movies"|"telu...   464015    492.0   
+
+   dislikes  comment_count                                  thumbnail_link  \
+0     798.0          882.0  https://i.ytimg.com/vi/kzwfHumJyYc/default.jpg   
+1     904.0            0.0  https://i.ytimg.com/vi/zUZ1z7FwLc8/default.jpg   
+2     243.0          149.0  https://i.ytimg.com/vi/10L1hZ9qa58/default.jpg   
+3    1624.0         2684.0  https://i.ytimg.com/vi/N1vE8iiEg64/default.jpg   
+4     293.0           66.0  https://i.ytimg.com/vi/kJzGH0PVQHQ/default.jpg   
+
+  comments_disabled ratings_disabled video_error_or_removed  \
+0             FALSO            FALSO                  FALSO   
+1         VERDADERO            FALSO                  FALSO   
+2             FALSO            FALSO                  FALSO   
+3             FALSO            FALSO                  FALSO   
+4             FALSO            FALSO                  FALSO   
+
+                                         description                   state  \
+0  Presenting Sharry Mann latest Punjabi Song  Cu...       Arunachal Pradesh   
+1  पीरियड्स के समय, पेट पर पति करता ऐसा, देखकर दं...       Arunachal Pradesh   
+2  Watch Stylish Star Allu Arjun @ ChaySam Weddin...  Dadra And Nagar Haveli   
+3  This video showcases the difference between pe...                Nagaland   
+4  why Samantha became EMOTIONAL @ Samantha naga ...        Himachal Pradesh   
+
+         lat        lon                               geometry  
+0  27.100399  93.616601        POINT (93.61660071 27.10039878)  
+1  27.100399  93.616601        POINT (93.61660071 27.10039878)  
+2  20.266578  73.016618  POINT (73.01661780000001 20.26657819)  
+3  25.666998  94.116570         POINT (94.11657019 25.6669979)  
+4  31.100025  77.166597        POINT (77.16659704 31.10002545)  
+
+#### Categorías Disponibles
+Total de categorías: [92m31[0m
+Listado de categorías:
+  [94m1[0m: Film & Animation
+  [94m2[0m: Autos & Vehicles
+  [94m10[0m: Music
+  [94m15[0m: Pets & Animals
+  [94m17[0m: Sports
+  [94m18[0m: Short Movies
+  [94m19[0m: Travel & Events
+  [94m20[0m: Gaming
+  [94m21[0m: Videoblogging
+  [94m22[0m: People & Blogs
+  [94m23[0m: Comedy
+  [94m24[0m: Entertainment
+  [94m25[0m: News & Politics
+  [94m26[0m: Howto & Style
+  [94m27[0m: Education
+  [94m28[0m: Science & Technology
+  [94m30[0m: Movies
+  [94m31[0m: Anime/Animation
+  [94m32[0m: Action/Adventure
+  [94m33[0m: Classics
+  [94m34[0m: Comedy
+  [94m35[0m: Documentary
+  [94m36[0m: Drama
+  [94m37[0m: Family
+  [94m38[0m: Foreign
+  [94m39[0m: Horror
+  [94m40[0m: Sci-Fi/Fantasy
+  [94m41[0m: Thriller
+  [94m42[0m: Shorts
+  [94m43[0m: Shows
+  [94m44[0m: Trailers
+
+#### Rango Temporal de Datos
+Fecha más antigua: [92m2017-11-14[0m
+Fecha más reciente: [92m2018-06-14[0m
+Período total: [94m212 días[0m
+
+============================================================
+3. PREPARACIÓN DE LOS DATOS
+============================================================
+Creando copia de trabajo del dataset original
+
+#### Tratamiento de Valores Faltantes
+Columnas con valores faltantes:
+  [95mvideo_id[0m: [93m5 (0.0%)[0m
+  [95mtrending_date[0m: [93m916 (2.4%)[0m
+  [95mtitle[0m: [93m998 (2.6%)[0m
+  [95mchannel_title[0m: [93m1,111 (2.9%)[0m
+  [95mcategory_id[0m: [93m1,144 (3.0%)[0m
+  [95mpublish_time[0m: [93m1,157 (3.0%)[0m
+  [95mtags[0m: [93m1,169 (3.0%)[0m
+  [95mviews[0m: [93m1,176 (3.1%)[0m
+  [95mlikes[0m: [93m1,181 (3.1%)[0m
+  [95mdislikes[0m: [93m1,181 (3.1%)[0m
+  [95mcomment_count[0m: [93m1,181 (3.1%)[0m
+  [95mthumbnail_link[0m: [93m1,181 (3.1%)[0m
+  [95mcomments_disabled[0m: [93m1,181 (3.1%)[0m
+  [95mratings_disabled[0m: [93m1,181 (3.1%)[0m
+  [95mvideo_error_or_removed[0m: [93m1,181 (3.1%)[0m
+  [95mdescription[0m: [93m1,742 (4.5%)[0m
+  title: valores faltantes rellenados con [92mcadena vacía[0m
+  channel_title: valores faltantes rellenados con [92mcadena vacía[0m
+  views: valores faltantes rellenados con [92m0[0m
+  likes: valores faltantes rellenados con [92m0[0m
+  dislikes: valores faltantes rellenados con [92m0[0m
+  comment_count: valores faltantes rellenados con [92m0[0m
+  description: valores faltantes rellenados con [92mcadena vacía[0m
+
+#### Conversión y Validación de Tipos de Datos
+  [95mviews[0m: convertido a [92mnumérico[0m
+  [95mlikes[0m: convertido a [92mnumérico[0m
+  [95mdislikes[0m: convertido a [92mnumérico[0m
+  [95mcomment_count[0m: convertido a [92mnumérico[0m
+  [95mcategory_id[0m: convertido a [92mnumérico[0m
+  [95mcomments_disabled[0m: convertido a [92mboolean[0m
+  [95mratings_disabled[0m: convertido a [92mboolean[0m
+  [95mvideo_error_or_removed[0m: convertido a [92mboolean[0m
+
+#### Tratamiento de Outliers
+  [95mviews[0m: [93m2,780[0m outliers extremos ajustados
+  [95mlikes[0m: [93m3,997[0m outliers extremos ajustados
+  [95mdislikes[0m: [93m2,893[0m outliers extremos ajustados
+  [95mcomment_count[0m: [93m3,298[0m outliers extremos ajustados
+
+#### Creación de Nuevas Variables de Análisis
+  [92mcategoria_nombre[0m: creada exitosamente
+  [92mfecha_parsed[0m: creada exitosamente
+  [92mtotal_interactions[0m: creada exitosamente
+  [92mengagement_rate[0m: creada exitosamente
+  [92mlike_dislike_ratio[0m: creada exitosamente
+  [92mviews_comments_ratio[0m: creada exitosamente
+  [92mlikes_per_view[0m: creada exitosamente
+  [92mcomments_per_view[0m: creada exitosamente
+  [92mperformance_tier[0m: creada exitosamente
+
+Dataset preparado: [92m38,533 registros[0m × [92m29 columnas[0m
+Datos guardados: [92mdatos_limpios[0m - Dataset procesado y con nuevas variables
+Ubicación: [95m./data/processed\IN_datos_limpios.csv[0m
+
+============================================================
+4. ANÁLISIS DE PREGUNTAS DE INVESTIGACIÓN
+============================================================
+
+### Pregunta 1: ¿Qué categorías de videos son las de mayor tendencia?
+-----------------------------------------------------------------
+
+Categorías con mayor número de videos en tendencia:
+Posición   Categoría                 Videos     Porcentaje
+-----------------------------------------------------------------
+[94m1         [0m Entertainment             [92m16,712    [0m [94m43.4      %[0m
+[94m2         [0m News & Politics           [92m5,241     [0m [94m13.6      %[0m
+[94m3         [0m Music                     [92m3,858     [0m [94m10.0      %[0m
+[94m4         [0m Comedy                    [92m3,429     [0m [94m8.9       %[0m
+[94m5         [0m People & Blogs            [92m2,624     [0m [94m6.8       %[0m
+[94m6         [0m Film & Animation          [92m1,658     [0m [94m4.3       %[0m
+[94m7         [0m Education                 [92m1,227     [0m [94m3.2       %[0m
+[94m8         [0m Howto & Style             [92m845       [0m [94m2.2       %[0m
+[94m9         [0m Sports                    [92m731       [0m [94m1.9       %[0m
+[94m10        [0m Science & Technology      [92m552       [0m [94m1.4       %[0m
+Gráfico guardado: [92m01_categorias_mayor_tendencia_actualizado.png[0m - Top 10 categorías con mayor tendencia
+Ubicación: [95m./data/graficos\01_categorias_mayor_tendencia_actualizado.png[0m
+
+Respuesta Pregunta 1: La categoría [92mEntertainment[0m es la de mayor tendencia con [92m16,712[0m videos ([94m43.4%[0m del total)
+
+### Pregunta 2: ¿Qué categorías son las que más gustan? ¿Y las que menos gustan?
+---------------------------------------------------------------------------
+
+Categorías que MÁS GUSTAN (por promedio de likes):
+Posición   Categoría                 Likes Promedio  Videos    
+----------------------------------------------------------------------
+[94m1         [0m Gaming                    [92m39,260         [0m [94m66        [0m
+[94m2         [0m Movies                    [92m34,005         [0m [94m16        [0m
+[94m3         [0m Science & Technology      [92m25,321         [0m [94m552       [0m
+[94m4         [0m Music                     [92m24,365         [0m [94m3,858     [0m
+[94m5         [0m Comedy                    [92m23,946         [0m [94m3,429     [0m
+
+Categorías que MENOS GUSTAN (por promedio de likes):
+Posición   Categoría                 Likes Promedio  Videos    
+----------------------------------------------------------------------
+[94m1         [0m Travel & Events           [93m2,117          [0m [94m8         [0m
+[94m2         [0m News & Politics           [93m2,621          [0m [94m5,241     [0m
+[94m3         [0m Shows                     [93m3,842          [0m [94m205       [0m
+[94m4         [0m Education                 [93m5,442          [0m [94m1,227     [0m
+[94m5         [0m People & Blogs            [93m7,160          [0m [94m2,624     [0m
+Gráfico guardado: [92m02_categorias_mas_menos_gustan_actualizado.png[0m - Comparación categorías más y menos gustadas
+Ubicación: [95m./data/graficos\02_categorias_mas_menos_gustan_actualizado.png[0m
+
+Respuesta Pregunta 2:
+• Categoría que MÁS gusta: [92mGaming[0m ([92m39,260[0m likes promedio)
+• Categoría que MENOS gusta: [93mTravel & Events[0m ([93m2,117[0m likes promedio)
+
+============================================================
+5. ANÁLISIS TEMPORAL Y GEOGRÁFICO
+============================================================
+
+### Pregunta 5: ¿Cómo ha cambiado el volumen de videos en tendencia a lo largo del tiempo?
+--------------------------------------------------------------------------------
+Distribución por día de la semana:
+  [94mLunes     [0m: [92m5,264[0m videos ([94m14.1%[0m)
+  [94mMartes    [0m: [92m5,476[0m videos ([94m14.7%[0m)
+  [94mMiércoles [0m: [92m5,168[0m videos ([94m13.8%[0m)
+  [94mJueves    [0m: [92m5,182[0m videos ([94m13.9%[0m)
+  [94mViernes   [0m: [92m5,289[0m videos ([94m14.2%[0m)
+  [94mSábado    [0m: [92m5,617[0m videos ([94m15.0%[0m)
+  [94mDomingo   [0m: [92m5,356[0m videos ([94m14.3%[0m)
+
+Respuesta Pregunta 5: El día más activo es [92mSábado[0m con [92m5,617[0m videos.
+
+### Pregunta 7: ¿En qué Estados se presenta el mayor número de Vistas, Likes y Dislikes?
+-------------------------------------------------------------------------------------
+
+Top 5 estados por vistas totales:
+  [94m1.[0m Nagaland: [92m804,708,022[0m vistas
+  [94m2.[0m Andhra Pradesh: [92m800,223,276[0m vistas
+  [94m3.[0m Andaman And Nicobar: [92m782,945,485[0m vistas
+  [94m4.[0m Haryana: [92m780,398,829[0m vistas
+  [94m5.[0m Madhya Pradesh: [92m772,870,353[0m vistas
+
+Top 5 estados por likes totales:
+  [94m1.[0m Nagaland: [92m14,346,165[0m likes
+  [94m2.[0m Sikkim: [92m14,232,811[0m likes
+  [94m3.[0m Andhra Pradesh: [92m14,012,003[0m likes
+  [94m4.[0m Andaman And Nicobar: [92m13,871,115[0m likes
+  [94m5.[0m Goa: [92m13,486,148[0m likes
+
+Top 5 estados por dislikes totales:
+  [94m1.[0m Nagaland: [93m1,014,642[0m dislikes
+  [94m2.[0m Andaman And Nicobar: [93m1,003,895[0m dislikes
+  [94m3.[0m Madhya Pradesh: [93m1,001,351[0m dislikes
+  [94m4.[0m Andhra Pradesh: [93m1,000,294[0m dislikes
+  [94m5.[0m Haryana: [93m999,364[0m dislikes
+Gráfico guardado: [92m05_volumen_tendencia_tiempo_actualizado.png[0m - Volumen de videos por día de semana
+Ubicación: [95m./data/graficos\05_volumen_tendencia_tiempo_actualizado.png[0m
+
+Respuesta Pregunta 7:
+• Estado con más VISTAS: [92mNagaland[0m ([92m804,708,022[0m)
+• Estado con más LIKES: [92mNagaland[0m ([92m14,346,165[0m)
+• Estado con más DISLIKES: [93mNagaland[0m ([93m1,014,642[0m)
+
+============================================================
+EJECUTANDO ANÁLISIS GEOGRÁFICO AVANZADO
+============================================================
+
+============================================================
+ANÁLISIS GEOGRÁFICO AVANZADO
+============================================================
+1. Preparando datos geográficos...
+Completado: [92m33 estados procesados[0m
+Datos guardados: [92mdatos_geograficos[0m - Datos agregados por estado con métricas
+Ubicación: [95m./data/processed\IN_datos_geograficos.csv[0m
+
+2. Creando mapas interactivos...
+   📍 Mapa de burbujas (Vistas)...
+   [91m✗ Error en mapa de burbujas: Invalid property specified for object of type plotly.graph_objs.layout.coloraxis.ColorBar: 'titlefont'
+
+Did you mean "tickfont"?
+
+    Valid properties:
+        bgcolor
+            Sets the color of padded area.
+        bordercolor
+            Sets the axis line color.
+        borderwidth
+            Sets the width (in px) or the border enclosing this
+            color bar.
+        dtick
+            Sets the step in-between ticks on this axis. Use with
+            `tick0`. Must be a positive number, or special strings
+            available to "log" and "date" axes. If the axis `type`
+            is "log", then ticks are set every 10^(n*dtick) where n
+            is the tick number. For example, to set a tick mark at
+            1, 10, 100, 1000, ... set dtick to 1. To set tick marks
+            at 1, 100, 10000, ... set dtick to 2. To set tick marks
+            at 1, 5, 25, 125, 625, 3125, ... set dtick to
+            log_10(5), or 0.69897000433. "log" has several special
+            values; "L<f>", where `f` is a positive number, gives
+            ticks linearly spaced in value (but not position). For
+            example `tick0` = 0.1, `dtick` = "L0.5" will put ticks
+            at 0.1, 0.6, 1.1, 1.6 etc. To show powers of 10 plus
+            small digits between, use "D1" (all digits) or "D2"
+            (only 2 and 5). `tick0` is ignored for "D1" and "D2".
+            If the axis `type` is "date", then you must convert the
+            time to milliseconds. For example, to set the interval
+            between ticks to one day, set `dtick` to 86400000.0.
+            "date" also has special values "M<n>" gives ticks
+            spaced by a number of months. `n` must be a positive
+            integer. To set ticks on the 15th of every third month,
+            set `tick0` to "2000-01-15" and `dtick` to "M3". To set
+            ticks every 4 years, set `dtick` to "M48"
+        exponentformat
+            Determines a formatting rule for the tick exponents.
+            For example, consider the number 1,000,000,000. If
+            "none", it appears as 1,000,000,000. If "e", 1e+9. If
+            "E", 1E+9. If "power", 1x10^9 (with 9 in a super
+            script). If "SI", 1G. If "B", 1B.
+        labelalias
+            Replacement text for specific tick or hover labels. For
+            example using {US: 'USA', CA: 'Canada'} changes US to
+            USA and CA to Canada. The labels we would have shown
+            must match the keys exactly, after adding any
+            tickprefix or ticksuffix. For negative numbers the
+            minus sign symbol used (U+2212) is wider than the
+            regular ascii dash. That means you need to use −1
+            instead of -1. labelalias can be used with any axis
+            type, and both keys (if needed) and values (if desired)
+            can include html-like tags or MathJax.
+        len
+            Sets the length of the color bar This measure excludes
+            the padding of both ends. That is, the color bar length
+            is this length minus the padding on both ends.
+        lenmode
+            Determines whether this color bar's length (i.e. the
+            measure in the color variation direction) is set in
+            units of plot "fraction" or in *pixels. Use `len` to
+            set the value.
+        minexponent
+            Hide SI prefix for 10^n if |n| is below this number.
+            This only has an effect when `tickformat` is "SI" or
+            "B".
+        nticks
+            Specifies the maximum number of ticks for the
+            particular axis. The actual number of ticks will be
+            chosen automatically to be less than or equal to
+            `nticks`. Has an effect only if `tickmode` is set to
+            "auto".
+        orientation
+            Sets the orientation of the colorbar.
+        outlinecolor
+            Sets the axis line color.
+        outlinewidth
+            Sets the width (in px) of the axis line.
+        separatethousands
+            If "true", even 4-digit integers are separated
+        showexponent
+            If "all", all exponents are shown besides their
+            significands. If "first", only the exponent of the
+            first tick is shown. If "last", only the exponent of
+            the last tick is shown. If "none", no exponents appear.
+        showticklabels
+            Determines whether or not the tick labels are drawn.
+        showtickprefix
+            If "all", all tick labels are displayed with a prefix.
+            If "first", only the first tick is displayed with a
+            prefix. If "last", only the last tick is displayed with
+            a suffix. If "none", tick prefixes are hidden.
+        showticksuffix
+            Same as `showtickprefix` but for tick suffixes.
+        thickness
+            Sets the thickness of the color bar This measure
+            excludes the size of the padding, ticks and labels.
+        thicknessmode
+            Determines whether this color bar's thickness (i.e. the
+            measure in the constant color direction) is set in
+            units of plot "fraction" or in "pixels". Use
+            `thickness` to set the value.
+        tick0
+            Sets the placement of the first tick on this axis. Use
+            with `dtick`. If the axis `type` is "log", then you
+            must take the log of your starting tick (e.g. to set
+            the starting tick to 100, set the `tick0` to 2) except
+            when `dtick`=*L<f>* (see `dtick` for more info). If the
+            axis `type` is "date", it should be a date string, like
+            date data. If the axis `type` is "category", it should
+            be a number, using the scale where each category is
+            assigned a serial number from zero in the order it
+            appears.
+        tickangle
+            Sets the angle of the tick labels with respect to the
+            horizontal. For example, a `tickangle` of -90 draws the
+            tick labels vertically.
+        tickcolor
+            Sets the tick color.
+        tickfont
+            Sets the color bar's tick label font
+        tickformat
+            Sets the tick label formatting rule using d3 formatting
+            mini-languages which are very similar to those in
+            Python. For numbers, see:
+            https://github.com/d3/d3-format/tree/v1.4.5#d3-format.
+            And for dates see: https://github.com/d3/d3-time-
+            format/tree/v2.2.3#locale_format. We add two items to
+            d3's date formatter: "%h" for half of the year as a
+            decimal number as well as "%{n}f" for fractional
+            seconds with n digits. For example, *2016-10-13
+            09:15:23.456* with tickformat "%H~%M~%S.%2f" would
+            display "09~15~23.46"
+        tickformatstops
+            A tuple of :class:`plotly.graph_objects.layout.coloraxi
+            s.colorbar.Tickformatstop` instances or dicts with
+            compatible properties
+        tickformatstopdefaults
+            When used in a template (as layout.template.layout.colo
+            raxis.colorbar.tickformatstopdefaults), sets the
+            default property values to use for elements of
+            layout.coloraxis.colorbar.tickformatstops
+        ticklabeloverflow
+            Determines how we handle tick labels that would
+            overflow either the graph div or the domain of the
+            axis. The default value for inside tick labels is *hide
+            past domain*. In other cases the default is *hide past
+            div*.
+        ticklabelposition
+            Determines where tick labels are drawn relative to the
+            ticks. Left and right options are used when
+            `orientation` is "h", top and bottom when `orientation`
+            is "v".
+        ticklabelstep
+            Sets the spacing between tick labels as compared to the
+            spacing between ticks. A value of 1 (default) means
+            each tick gets a label. A value of 2 means shows every
+            2nd label. A larger value n means only every nth tick
+            is labeled. `tick0` determines which labels are shown.
+            Not implemented for axes with `type` "log" or
+            "multicategory", or when `tickmode` is "array".
+        ticklen
+            Sets the tick length (in px).
+        tickmode
+            Sets the tick mode for this axis. If "auto", the number
+            of ticks is set via `nticks`. If "linear", the
+            placement of the ticks is determined by a starting
+            position `tick0` and a tick step `dtick` ("linear" is
+            the default value if `tick0` and `dtick` are provided).
+            If "array", the placement of the ticks is set via
+            `tickvals` and the tick text is `ticktext`. ("array" is
+            the default value if `tickvals` is provided).
+        tickprefix
+            Sets a tick label prefix.
+        ticks
+            Determines whether ticks are drawn or not. If "", this
+            axis' ticks are not drawn. If "outside" ("inside"),
+            this axis' are drawn outside (inside) the axis lines.
+        ticksuffix
+            Sets a tick label suffix.
+        ticktext
+            Sets the text displayed at the ticks position via
+            `tickvals`. Only has an effect if `tickmode` is set to
+            "array". Used with `tickvals`.
+        ticktextsrc
+            Sets the source reference on Chart Studio Cloud for
+            `ticktext`.
+        tickvals
+            Sets the values at which ticks on this axis appear.
+            Only has an effect if `tickmode` is set to "array".
+            Used with `ticktext`.
+        tickvalssrc
+            Sets the source reference on Chart Studio Cloud for
+            `tickvals`.
+        tickwidth
+            Sets the tick width (in px).
+        title
+            :class:`plotly.graph_objects.layout.coloraxis.colorbar.
+            Title` instance or dict with compatible properties
+        x
+            Sets the x position with respect to `xref` of the color
+            bar (in plot fraction). When `xref` is "paper",
+            defaults to 1.02 when `orientation` is "v" and 0.5 when
+            `orientation` is "h". When `xref` is "container",
+            defaults to 1 when `orientation` is "v" and 0.5 when
+            `orientation` is "h". Must be between 0 and 1 if `xref`
+            is "container" and between "-2" and 3 if `xref` is
+            "paper".
+        xanchor
+            Sets this color bar's horizontal position anchor. This
+            anchor binds the `x` position to the "left", "center"
+            or "right" of the color bar. Defaults to "left" when
+            `orientation` is "v" and "center" when `orientation` is
+            "h".
+        xpad
+            Sets the amount of padding (in px) along the x
+            direction.
+        xref
+            Sets the container `x` refers to. "container" spans the
+            entire `width` of the plot. "paper" refers to the width
+            of the plotting area only.
+        y
+            Sets the y position with respect to `yref` of the color
+            bar (in plot fraction). When `yref` is "paper",
+            defaults to 0.5 when `orientation` is "v" and 1.02 when
+            `orientation` is "h". When `yref` is "container",
+            defaults to 0.5 when `orientation` is "v" and 1 when
+            `orientation` is "h". Must be between 0 and 1 if `yref`
+            is "container" and between "-2" and 3 if `yref` is
+            "paper".
+        yanchor
+            Sets this color bar's vertical position anchor This
+            anchor binds the `y` position to the "top", "middle" or
+            "bottom" of the color bar. Defaults to "middle" when
+            `orientation` is "v" and "bottom" when `orientation` is
+            "h".
+        ypad
+            Sets the amount of padding (in px) along the y
+            direction.
+        yref
+            Sets the container `y` refers to. "container" spans the
+            entire `height` of the plot. "paper" refers to the
+            height of the plotting area only.
+        
+Did you mean "tickfont"?
+
+Bad property path:
+titlefont_size
+^^^^^^^^^[0m
+   📍 Mapa de likes...
+   [91m✗ Error en mapa de likes: Invalid property specified for object of type plotly.graph_objs.layout.coloraxis.ColorBar: 'titlefont'
+
+Did you mean "tickfont"?
+
+    Valid properties:
+        bgcolor
+            Sets the color of padded area.
+        bordercolor
+            Sets the axis line color.
+        borderwidth
+            Sets the width (in px) or the border enclosing this
+            color bar.
+        dtick
+            Sets the step in-between ticks on this axis. Use with
+            `tick0`. Must be a positive number, or special strings
+            available to "log" and "date" axes. If the axis `type`
+            is "log", then ticks are set every 10^(n*dtick) where n
+            is the tick number. For example, to set a tick mark at
+            1, 10, 100, 1000, ... set dtick to 1. To set tick marks
+            at 1, 100, 10000, ... set dtick to 2. To set tick marks
+            at 1, 5, 25, 125, 625, 3125, ... set dtick to
+            log_10(5), or 0.69897000433. "log" has several special
+            values; "L<f>", where `f` is a positive number, gives
+            ticks linearly spaced in value (but not position). For
+            example `tick0` = 0.1, `dtick` = "L0.5" will put ticks
+            at 0.1, 0.6, 1.1, 1.6 etc. To show powers of 10 plus
+            small digits between, use "D1" (all digits) or "D2"
+            (only 2 and 5). `tick0` is ignored for "D1" and "D2".
+            If the axis `type` is "date", then you must convert the
+            time to milliseconds. For example, to set the interval
+            between ticks to one day, set `dtick` to 86400000.0.
+            "date" also has special values "M<n>" gives ticks
+            spaced by a number of months. `n` must be a positive
+            integer. To set ticks on the 15th of every third month,
+            set `tick0` to "2000-01-15" and `dtick` to "M3". To set
+            ticks every 4 years, set `dtick` to "M48"
+        exponentformat
+            Determines a formatting rule for the tick exponents.
+            For example, consider the number 1,000,000,000. If
+            "none", it appears as 1,000,000,000. If "e", 1e+9. If
+            "E", 1E+9. If "power", 1x10^9 (with 9 in a super
+            script). If "SI", 1G. If "B", 1B.
+        labelalias
+            Replacement text for specific tick or hover labels. For
+            example using {US: 'USA', CA: 'Canada'} changes US to
+            USA and CA to Canada. The labels we would have shown
+            must match the keys exactly, after adding any
+            tickprefix or ticksuffix. For negative numbers the
+            minus sign symbol used (U+2212) is wider than the
+            regular ascii dash. That means you need to use −1
+            instead of -1. labelalias can be used with any axis
+            type, and both keys (if needed) and values (if desired)
+            can include html-like tags or MathJax.
+        len
+            Sets the length of the color bar This measure excludes
+            the padding of both ends. That is, the color bar length
+            is this length minus the padding on both ends.
+        lenmode
+            Determines whether this color bar's length (i.e. the
+            measure in the color variation direction) is set in
+            units of plot "fraction" or in *pixels. Use `len` to
+            set the value.
+        minexponent
+            Hide SI prefix for 10^n if |n| is below this number.
+            This only has an effect when `tickformat` is "SI" or
+            "B".
+        nticks
+            Specifies the maximum number of ticks for the
+            particular axis. The actual number of ticks will be
+            chosen automatically to be less than or equal to
+            `nticks`. Has an effect only if `tickmode` is set to
+            "auto".
+        orientation
+            Sets the orientation of the colorbar.
+        outlinecolor
+            Sets the axis line color.
+        outlinewidth
+            Sets the width (in px) of the axis line.
+        separatethousands
+            If "true", even 4-digit integers are separated
+        showexponent
+            If "all", all exponents are shown besides their
+            significands. If "first", only the exponent of the
+            first tick is shown. If "last", only the exponent of
+            the last tick is shown. If "none", no exponents appear.
+        showticklabels
+            Determines whether or not the tick labels are drawn.
+        showtickprefix
+            If "all", all tick labels are displayed with a prefix.
+            If "first", only the first tick is displayed with a
+            prefix. If "last", only the last tick is displayed with
+            a suffix. If "none", tick prefixes are hidden.
+        showticksuffix
+            Same as `showtickprefix` but for tick suffixes.
+        thickness
+            Sets the thickness of the color bar This measure
+            excludes the size of the padding, ticks and labels.
+        thicknessmode
+            Determines whether this color bar's thickness (i.e. the
+            measure in the constant color direction) is set in
+            units of plot "fraction" or in "pixels". Use
+            `thickness` to set the value.
+        tick0
+            Sets the placement of the first tick on this axis. Use
+            with `dtick`. If the axis `type` is "log", then you
+            must take the log of your starting tick (e.g. to set
+            the starting tick to 100, set the `tick0` to 2) except
+            when `dtick`=*L<f>* (see `dtick` for more info). If the
+            axis `type` is "date", it should be a date string, like
+            date data. If the axis `type` is "category", it should
+            be a number, using the scale where each category is
+            assigned a serial number from zero in the order it
+            appears.
+        tickangle
+            Sets the angle of the tick labels with respect to the
+            horizontal. For example, a `tickangle` of -90 draws the
+            tick labels vertically.
+        tickcolor
+            Sets the tick color.
+        tickfont
+            Sets the color bar's tick label font
+        tickformat
+            Sets the tick label formatting rule using d3 formatting
+            mini-languages which are very similar to those in
+            Python. For numbers, see:
+            https://github.com/d3/d3-format/tree/v1.4.5#d3-format.
+            And for dates see: https://github.com/d3/d3-time-
+            format/tree/v2.2.3#locale_format. We add two items to
+            d3's date formatter: "%h" for half of the year as a
+            decimal number as well as "%{n}f" for fractional
+            seconds with n digits. For example, *2016-10-13
+            09:15:23.456* with tickformat "%H~%M~%S.%2f" would
+            display "09~15~23.46"
+        tickformatstops
+            A tuple of :class:`plotly.graph_objects.layout.coloraxi
+            s.colorbar.Tickformatstop` instances or dicts with
+            compatible properties
+        tickformatstopdefaults
+            When used in a template (as layout.template.layout.colo
+            raxis.colorbar.tickformatstopdefaults), sets the
+            default property values to use for elements of
+            layout.coloraxis.colorbar.tickformatstops
+        ticklabeloverflow
+            Determines how we handle tick labels that would
+            overflow either the graph div or the domain of the
+            axis. The default value for inside tick labels is *hide
+            past domain*. In other cases the default is *hide past
+            div*.
+        ticklabelposition
+            Determines where tick labels are drawn relative to the
+            ticks. Left and right options are used when
+            `orientation` is "h", top and bottom when `orientation`
+            is "v".
+        ticklabelstep
+            Sets the spacing between tick labels as compared to the
+            spacing between ticks. A value of 1 (default) means
+            each tick gets a label. A value of 2 means shows every
+            2nd label. A larger value n means only every nth tick
+            is labeled. `tick0` determines which labels are shown.
+            Not implemented for axes with `type` "log" or
+            "multicategory", or when `tickmode` is "array".
+        ticklen
+            Sets the tick length (in px).
+        tickmode
+            Sets the tick mode for this axis. If "auto", the number
+            of ticks is set via `nticks`. If "linear", the
+            placement of the ticks is determined by a starting
+            position `tick0` and a tick step `dtick` ("linear" is
+            the default value if `tick0` and `dtick` are provided).
+            If "array", the placement of the ticks is set via
+            `tickvals` and the tick text is `ticktext`. ("array" is
+            the default value if `tickvals` is provided).
+        tickprefix
+            Sets a tick label prefix.
+        ticks
+            Determines whether ticks are drawn or not. If "", this
+            axis' ticks are not drawn. If "outside" ("inside"),
+            this axis' are drawn outside (inside) the axis lines.
+        ticksuffix
+            Sets a tick label suffix.
+        ticktext
+            Sets the text displayed at the ticks position via
+            `tickvals`. Only has an effect if `tickmode` is set to
+            "array". Used with `tickvals`.
+        ticktextsrc
+            Sets the source reference on Chart Studio Cloud for
+            `ticktext`.
+        tickvals
+            Sets the values at which ticks on this axis appear.
+            Only has an effect if `tickmode` is set to "array".
+            Used with `ticktext`.
+        tickvalssrc
+            Sets the source reference on Chart Studio Cloud for
+            `tickvals`.
+        tickwidth
+            Sets the tick width (in px).
+        title
+            :class:`plotly.graph_objects.layout.coloraxis.colorbar.
+            Title` instance or dict with compatible properties
+        x
+            Sets the x position with respect to `xref` of the color
+            bar (in plot fraction). When `xref` is "paper",
+            defaults to 1.02 when `orientation` is "v" and 0.5 when
+            `orientation` is "h". When `xref` is "container",
+            defaults to 1 when `orientation` is "v" and 0.5 when
+            `orientation` is "h". Must be between 0 and 1 if `xref`
+            is "container" and between "-2" and 3 if `xref` is
+            "paper".
+        xanchor
+            Sets this color bar's horizontal position anchor. This
+            anchor binds the `x` position to the "left", "center"
+            or "right" of the color bar. Defaults to "left" when
+            `orientation` is "v" and "center" when `orientation` is
+            "h".
+        xpad
+            Sets the amount of padding (in px) along the x
+            direction.
+        xref
+            Sets the container `x` refers to. "container" spans the
+            entire `width` of the plot. "paper" refers to the width
+            of the plotting area only.
+        y
+            Sets the y position with respect to `yref` of the color
+            bar (in plot fraction). When `yref` is "paper",
+            defaults to 0.5 when `orientation` is "v" and 1.02 when
+            `orientation` is "h". When `yref` is "container",
+            defaults to 0.5 when `orientation` is "v" and 1 when
+            `orientation` is "h". Must be between 0 and 1 if `yref`
+            is "container" and between "-2" and 3 if `yref` is
+            "paper".
+        yanchor
+            Sets this color bar's vertical position anchor This
+            anchor binds the `y` position to the "top", "middle" or
+            "bottom" of the color bar. Defaults to "middle" when
+            `orientation` is "v" and "bottom" when `orientation` is
+            "h".
+        ypad
+            Sets the amount of padding (in px) along the y
+            direction.
+        yref
+            Sets the container `y` refers to. "container" spans the
+            entire `height` of the plot. "paper" refers to the
+            height of the plotting area only.
+        
+Did you mean "tickfont"?
+
+Bad property path:
+titlefont_size
+^^^^^^^^^[0m
+   📍 Mapas comparativos...
+   [92m✓ Mapas comparativos creados[0m
+
+3. Generando mapa interactivo HTML...
+   [92m✓ Mapa HTML guardado: IN_mapa_interactivo.html[0m
+   Ubicación: [95m./data/outputs\IN_mapa_interactivo.html[0m
+
+[92mANÁLISIS GEOGRÁFICO COMPLETADO[0m
+----------------------------------------
+[92m✓ Análisis geográfico avanzado completado exitosamente[0m
+
+============================================================
+6. ANÁLISIS DE COMENTARIOS Y MODELADO PREDICTIVO
+============================================================
+
+### Pregunta 8: ¿Los videos en tendencia son los que mayor cantidad de comentarios positivos reciben?
+-----------------------------------------------------------------------------------------------
+Videos con comentarios: [92m36,030[0m ([94m93.5%[0m)
+Videos sin comentarios: [93m2,503[0m ([94m6.5%[0m)
+
+Correlaciones de comment_count con otras métricas:
+  [95mviews          [0m: [92m0.724[0m
+  [95mlikes          [0m: [92m0.899[0m
+  [95mengagement_rate[0m: [94m0.363[0m
+
+Respuesta Pregunta 8: SÍ, existe una correlación fuerte entre cantidad de comentarios y estar en tendencia (r=0.724).
+
+### Pregunta 9: ¿Es factible predecir el número de Vistas, Likes o Dislikes?
+---------------------------------------------------------------------------
+Features disponibles para modelado: [92m6[0m
+Registros para modelado: [92m38,533[0m
+
+#### Modelado Predictivo para VIEWS
+-----------------------------------
+Conjunto de entrenamiento: [92m30,826[0m registros
+Conjunto de prueba: [92m7,707[0m registros
+
+Entrenando Random Forest...
+  RMSE: [94m66,238[0m
+  MAE: [94m28,644[0m
+  R² Score: [92m0.993[0m
+
+Entrenando Linear Regression...
+  RMSE: [94m347,184[0m
+  MAE: [94m231,947[0m
+  R² Score: [92m0.803[0m
+Gráfico guardado: [92m09_prediccion_vistas_modelos_actualizado.png[0m - Resultados modelado predictivo Views
+Ubicación: [95m./data/graficos\09_prediccion_vistas_modelos_actualizado.png[0m
