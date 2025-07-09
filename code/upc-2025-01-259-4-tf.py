@@ -11,29 +11,24 @@ import os
 from datetime import datetime
 from tqdm import tqdm
 
-# Machine Learning
+# ML
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.preprocessing import StandardScaler
 
-# =============================================================================
-# CONFIGURACIÓN GLOBAL CENTRALIZADA
-# =============================================================================
+# CONFIGURACIÓN GLOBAL 
 
-# Configuración general
 warnings.filterwarnings('ignore')
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', 100)
 plt.style.use('default')
 sns.set_palette("husl")
 
-# Configurar Plotly para modo silencioso
 import plotly.io as pio
 pio.renderers.default = "browser"
 
-# Códigos ANSI para colores
 VERDE = '\033[92m'
 AZUL = '\033[94m'
 ROJO = '\033[91m'
@@ -41,18 +36,16 @@ MAGENTA = '\033[95m'
 AMARILLO = '\033[93m'
 ENDC = '\033[0m'
 
-# Separador para secciones importantes
 SEPARADOR = "=" * 70
 
-# Selección de país
-CODIGO_PAIS = "IN"  # India para análisis inicial
+CODIGO_PAIS = "IN"
 
 # Nombres de países
 NOMBRES_PAISES = {
     "DE": "Alemania", "FR": "Francia", "GB": "Gran Bretaña", "IN": "India"
 }
 
-# Estructura de carpetas centralizada
+# Estructura de carpetas 
 CARPETA_DATOS = "./data/all-data"
 CARPETA_PROCESADOS = "./data/processed"
 CARPETA_SALIDAS = "./data/outputs"
@@ -63,11 +56,9 @@ os.makedirs(CARPETA_PROCESADOS, exist_ok=True)
 os.makedirs(CARPETA_SALIDAS, exist_ok=True)
 os.makedirs(CARPETA_GRAFICOS, exist_ok=True)
 
-# Patrones de archivos
 PATRON_ARCHIVO_VIDEOS = "{country}videos_cc50_202101.csv"
 PATRON_ARCHIVO_CATEGORIAS = "{country}_category_id.json"
 
-# Información del proyecto
 INFO_PROYECTO = {
     'titulo': 'Análisis de Videos de YouTube en Tendencia',
     'seccion': '259',
@@ -76,7 +67,6 @@ INFO_PROYECTO = {
     'repositorio': 'FDS-2025-1-259'
 }
 
-# Preguntas de investigación
 PREGUNTAS_INVESTIGACION = {
     1: "¿Qué categorías de videos son las de mayor tendencia?",
     2: "¿Qué categorías de videos son los que más gustan? ¿Y las que menos gustan?",
@@ -88,10 +78,6 @@ PREGUNTAS_INVESTIGACION = {
     8: "¿Los videos en tendencia son los que mayor cantidad de comentarios positivos reciben?",
     9: "¿Es factible predecir el número de 'Vistas' o 'Me gusta' o 'No me gusta'?"
 }
-
-# =============================================================================
-# FUNCIONES AUXILIARES CENTRALIZADAS
-# =============================================================================
 
 def obtener_archivos_pais(codigo_pais=CODIGO_PAIS):
     """Obtener rutas de archivos para el país seleccionado"""
@@ -123,11 +109,10 @@ def cargar_y_limpiar_datos():
     
     print(f"{SEPARADOR}\n{AZUL}Cargando y limpiando datos de YouTube {NOMBRES_PAISES[CODIGO_PAIS]}{ENDC}")
     
-    # Cargar datos principales
     print(f"{AZUL}Cargando archivo CSV...{ENDC}")
     df = pd.read_csv(ruta_videos, low_memory=False)
     
-    # Cargar mapeo de categorías
+    # mapeo de categorías
     print(f"{AZUL}Cargando categorías...{ENDC}")
     with open(ruta_categorias, 'r', encoding='utf-8') as f:
         categorias = json.load(f)
@@ -137,7 +122,6 @@ def cargar_y_limpiar_datos():
     columnas_numericas = ['views', 'likes', 'dislikes', 'comment_count', 'category_id']
     
     with tqdm(total=7, desc="Procesando limpieza") as pbar:
-        # Mapear categorías
         df['category_id'] = pd.to_numeric(df['category_id'], errors='coerce').fillna(0).astype(int)
         df['categoria_nombre'] = df['category_id'].map(mapeo_categorias)
         pbar.update(1)
@@ -208,15 +192,14 @@ def guardar_datos_procesados(df, nombre_archivo, descripcion=""):
         return None
 
 
-# =============================================================================
-# FUNCIÓN DE MAPA INTERACTIVO ÚNICO
-# =============================================================================
+# =============================
+# FUNCIÓN DE MAPA INTERACTIVO 
+# =============================
 
 def crear_mapa_ratio_like_dislike(df):
     """Crear mapa interactivo único para ratio like/dislike por estado"""
     print(f"\n{AZUL}Creando mapa interactivo de ratio like/dislike por estado...{ENDC}")
     
-    # Preparar datos geográficos
     geo_data = df.groupby(['state', 'lat', 'lon']).agg({
         'like_dislike_ratio': 'mean',
         'likes': 'sum',
@@ -224,20 +207,17 @@ def crear_mapa_ratio_like_dislike(df):
         'video_id': 'count'
     }).reset_index()
     
-    # Calcular ratio global por estado
     geo_data['ratio_global'] = geo_data['likes'] / (geo_data['likes'] + geo_data['dislikes'])
     geo_data = geo_data.dropna()
     
-    # Crear mapa centrado en India
+    # mapa centrado en India
     m = folium.Map(
         location=[20.5937, 78.9629],
         zoom_start=5,
         tiles='OpenStreetMap'
     )
     
-    # Añadir marcadores para cada estado
     for idx, row in geo_data.iterrows():
-        # Crear popup con información
         popup_text = f"""
         <b>{row['state']}</b><br>
         Videos: {row['video_id']:,}<br>
@@ -260,7 +240,6 @@ def crear_mapa_ratio_like_dislike(df):
             color = 'red'
             categoria = 'Negativo'
             
-        # Determinar tamaño basado en número de videos
         radius = min(max(row['video_id'] / 50, 5), 25)
         
         folium.CircleMarker(
@@ -274,7 +253,6 @@ def crear_mapa_ratio_like_dislike(df):
             weight=2
         ).add_to(m)
     
-    # Añadir leyenda con historia de colores
     legend_html = f'''
     <div style="position: fixed; 
                 bottom: 50px; left: 50px; width: 200px; height: 150px; 
@@ -300,15 +278,14 @@ def crear_mapa_ratio_like_dislike(df):
     
     return geo_data
 
-# =============================================================================
-# FUNCIONES DE ANÁLISIS (ESTILO ORIGINAL)
-# =============================================================================
+# =======================
+# FUNCIONES DE ANÁLISIS 
+# =======================
 
 def pre1_categorias_tendencia(df):
     """Pregunta 1: Que categorías de videos son las de mayor tendencia?"""
     print(f"\n{AZUL}Pregunta 1: Que categorías de videos son las de mayor tendencia?{ENDC}")
     
-    # Calcular frecuencia de categorías en trending
     tendencia_categorias = df['categoria_nombre'].value_counts().head(10)
     
     plt.figure(figsize=(12, 8))
@@ -323,7 +300,7 @@ def pre1_categorias_tendencia(df):
               fontsize=16, fontweight='bold', pad=20)
     plt.grid(axis='x', alpha=0.3, linestyle='--')
     
-    # Agregar valores en las barras
+    # add valores en las barras
     for i, bar in enumerate(bars):
         width = bar.get_width()
         plt.text(width + width*0.01, bar.get_y() + bar.get_height()/2, 
@@ -356,7 +333,6 @@ def pre2_categorias_mayor_menor_gusto(df):
     colors_mas = plt.cm.Greens(np.linspace(0.5, 0.9, 5))
     colors_menos = plt.cm.Reds(np.linspace(0.5, 0.9, 5))
     
-    # Gráfico de categorías que más gustan
     bars1 = ax1.barh(top_5_mas_gustan['categoria_nombre'][::-1], 
                      top_5_mas_gustan['mean'][::-1], 
                      color=colors_mas, edgecolor='darkgreen', linewidth=1.2, alpha=0.8)
@@ -404,18 +380,18 @@ def pre3_mejor_ratio_likes_dislikes(df):
     ratio_por_categoria = ratio_por_categoria[ratio_por_categoria['video_id'] >= 15]
     ratio_por_categoria = ratio_por_categoria.sort_values('like_dislike_ratio', ascending=False)
     
-    top_10_ratio = ratio_por_categoria.head(10)
+    top_5 = ratio_por_categoria.head(5)
     
     plt.figure(figsize=(12, 8))
     
-    colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(top_10_ratio)))
+    colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(top_5)))
     
-    bars = plt.barh(top_10_ratio['categoria_nombre'][::-1], 
-                   top_10_ratio['like_dislike_ratio'][::-1],
+    bars = plt.barh(top_5['categoria_nombre'][::-1], 
+                   top_5['like_dislike_ratio'][::-1],
                    color=colors, edgecolor='darkblue', linewidth=1.2, alpha=0.85)
     
     plt.xlabel('Ratio Me gusta / Total interacciones', fontsize=13, fontweight='bold')
-    plt.title('Top 10 Categorías con Mejor Ratio Me gusta / No me gusta', 
+    plt.title('Top 5 Categorías con Mejor Ratio Me gusta / No me gusta', 
               fontsize=16, fontweight='bold', pad=20)
     plt.grid(axis='x', alpha=0.3, linestyle='--')
     
@@ -433,9 +409,9 @@ def pre3_mejor_ratio_likes_dislikes(df):
     plt.close()
     
     print(f"Gráfico guardado en: {MAGENTA}{filename}{ENDC}")
-    print(f"Mejor categoría en ratio likes/dislikes: {VERDE}{top_10_ratio.iloc[0]['categoria_nombre']}{ENDC}")
-    print(f"Ratio: {VERDE}{top_10_ratio.iloc[0]['like_dislike_ratio']:.3f}{ENDC}")
-    print(f"Esto significa que {VERDE}{top_10_ratio.iloc[0]['like_dislike_ratio']*100:.1f}%{ENDC} de las interacciones son likes")
+    print(f"Mejor categoría en ratio likes/dislikes: {VERDE}{top_5.iloc[0]['categoria_nombre']}{ENDC}")
+    print(f"Ratio: {VERDE}{top_5.iloc[0]['like_dislike_ratio']:.3f}{ENDC}")
+    print(f"Esto significa que {VERDE}{top_5.iloc[0]['like_dislike_ratio']*100:.1f}%{ENDC} de las interacciones son likes")
 
 def pre4_ratio_vistas_comentarios(df):
     """Pregunta 4: Que categorías de videos tienen la mejor proporción (ratio) de Vistas / Comentarios?"""
@@ -517,12 +493,17 @@ def pre5_volumen_tendencia_tiempo(df):
                 linewidth=3, color='steelblue', marker='o', markersize=6,
                 markeredgecolor='darkblue', markeredgewidth=1.5, alpha=0.9)
         
-        # Área sombreada
-        plt.fill_between(fechas, volumen_semanal['num_videos'], 
-                        alpha=0.25, color='lightblue')
-        
         # Línea de promedio
         promedio = volumen_semanal['num_videos'].mean()
+        
+        # Área sombreada
+        plt.fill_between(fechas,
+                 promedio - 10,
+                 promedio + 10,
+                 color='lightblue',
+                 alpha=0.25,
+                 label='Zona promedio ±10')
+        
         plt.axhline(y=promedio, color='red', linestyle='--', linewidth=2, alpha=0.7,
                    label=f'Promedio: {promedio:.0f} videos')
         
@@ -561,7 +542,8 @@ def pre5_volumen_tendencia_tiempo(df):
         print(f"Promedio semanal: {VERDE}{volumen_semanal['num_videos'].mean():.1f}{ENDC} videos")
         
     else:
-        print(f"{ROJO}No se encontró la columna trending_date en los datos{ENDC}")
+        print(f"{ROJO}No se encontró la columna trending_date en los datos{ENDC}")
+
 
 def pre6_canales_mayor_menor_tendencia(df):
     """Analiza los canales con más apariciones en tendencias"""
@@ -573,7 +555,7 @@ def pre6_canales_mayor_menor_tendencia(df):
     
     # Análisis de frecuencia
     canales_trending = df['channel_title'].value_counts()
-    top_canales = canales_trending.head(15)
+    top_canales = canales_trending.head(5)
     top_channel = top_canales.index[0]
     top_count = top_canales.iloc[0]
     canales_unicos = canales_trending[canales_trending == 1]
@@ -594,7 +576,7 @@ def pre6_canales_mayor_menor_tendencia(df):
     
     plt.xlabel('Número de videos en tendencia', fontsize=12, fontweight='bold')
     plt.ylabel('Canales', fontsize=12, fontweight='bold')
-    plt.title('Top 15 Canales con Más Videos en Tendencia', 
+    plt.title('Top 5 Canales con Más Videos en Tendencia', 
              fontsize=14, fontweight='bold', pad=20)
     plt.grid(axis='x', alpha=0.3, linestyle='--')
     plt.tight_layout()
@@ -627,7 +609,7 @@ def pre7_estados_vistas_interacciones(df):
             'video_id': 'count'
         }).reset_index()
         
-        estados_stats = estados_stats.sort_values('views', ascending=False).head(12)
+        estados_stats = estados_stats.sort_values('views', ascending=False).head(5)
         
         # Stacked bar chart
         fig, ax = plt.subplots(figsize=(15, 9))
@@ -650,7 +632,7 @@ def pre7_estados_vistas_interacciones(df):
         
         ax.set_xlabel('Estados', fontsize=13, fontweight='bold')
         ax.set_ylabel('Cantidad (Millones)', fontsize=13, fontweight='bold')
-        ax.set_title('Top 12 Estados por Vistas, Likes y Dislikes\n(valores en millones)', 
+        ax.set_title('Top 5 Estados por Vistas, Likes y Dislikes\n(valores en millones)', 
                     fontsize=16, fontweight='bold', pad=20)
         ax.set_xticks(x)
         ax.set_xticklabels(estados_stats['state'], rotation=45, ha='right')
@@ -822,13 +804,12 @@ def pre9_prediccion_vistas_likes_dislikes(df):
         print(f"  MAE: {AZUL}{mae:,.0f}{ENDC}")
         print(f"  R² Score: {color_r2}{r2:.3f}{ENDC}")
     
-    # Visualización de predicciones
     if resultados_modelos:
         fig, axes = plt.subplots(1, 2, figsize=(16, 6))
         fig.suptitle(f'Resultados de Modelado Predictivo - Views - {NOMBRES_PAISES[CODIGO_PAIS]}', fontsize=16)
         
         for i, (nombre_modelo, datos) in enumerate(resultados_modelos.items()):
-            if i < 2:  # Solo mostrar 2 gráficos
+            if i < 2:
                 # Obtener predicciones
                 if nombre_modelo == 'Linear Regression':
                     y_pred_viz = datos['modelo'].predict(scaler.transform(X_test))
@@ -858,7 +839,6 @@ def pre9_prediccion_vistas_likes_dislikes(df):
     for nombre_modelo, datos in resultados_modelos.items():
         print(f"  {nombre_modelo} - R²: {VERDE}{datos['r2']:.3f}{ENDC}, MAE: {VERDE}{datos['mae']/1e6:.2f}M{ENDC}")
     
-    # Respuesta a la pregunta 9
     print(f"\n{SEPARADOR}")
     print("RESPUESTA PREGUNTA 9")
     print(f"{SEPARADOR}")
@@ -883,9 +863,6 @@ def pre9_prediccion_vistas_likes_dislikes(df):
     mejor_modelo_nombre = max(resultados_modelos.items(), key=lambda x: x[1]['r2'])[0]
     print(f"Mejor modelo: {VERDE}{mejor_modelo_nombre}{ENDC}")
 
-# =============================================================================
-# FUNCIÓN PRINCIPAL
-# =============================================================================
 
 def main():
     """Función principal que ejecuta todo el análisis"""
@@ -913,10 +890,8 @@ Análisis de datos de YouTube para el país: {VERDE}{NOMBRES_PAISES[CODIGO_PAIS]
 Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a partir de los datos.
     """)
 
-    # Mostrar configuración
     mostrar_configuracion_actual()
     
-    # Validar archivos
     archivos = obtener_archivos_pais(CODIGO_PAIS)
     videos_existe = os.path.exists(archivos['archivo_videos'])
     categorias_existe = os.path.exists(archivos['archivo_categorias'])
@@ -943,7 +918,6 @@ Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a
     
     df = cargar_y_limpiar_datos()
     
-    # Preguntas de investigación
     print(f"\n{SEPARADOR}")
     print("PREGUNTAS DE INVESTIGACIÓN")
     print(f"{SEPARADOR}")
@@ -951,7 +925,6 @@ Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a
     for i, pregunta in PREGUNTAS_INVESTIGACION.items():
         print(f"{VERDE}{i}.{ENDC} {pregunta}")
     
-    # Ejecutar análisis
     preguntas = [
         ("Pregunta 1: Categorías de mayor tendencia", pre1_categorias_tendencia),
         ("Pregunta 2: Categorías que más/menos gustan", pre2_categorias_mayor_menor_gusto),
@@ -969,7 +942,7 @@ Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a
             funcion(df)
             pbar.update(1)
     
-    # Crear mapa interactivo único
+    # mapa interactivo único
     if 'state' in df.columns and 'lat' in df.columns and 'lon' in df.columns:
         print(f"\n{SEPARADOR}")
         print("CREANDO MAPA INTERACTIVO")
@@ -981,7 +954,6 @@ Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a
         except Exception as e:
             print(f"{ROJO}Error creando mapa interactivo: {e}{ENDC}")
     
-    # Guardar datos finales
     guardar_datos_procesados(df, "dataset_final", "Dataset completo procesado con todas las variables")
     
     print(f"\n{SEPARADOR}")
@@ -991,21 +963,6 @@ Aplicando la metodología {AZUL}CRISP-DM{ENDC} para crear conocimiento y valor a
     print(f"""
 {VERDE}PROYECTO CRISP-DM COMPLETADO{ENDC}
 
-ANÁLISIS COMPLETADO:
-- País analizado: {VERDE}{NOMBRES_PAISES[CODIGO_PAIS]}{ENDC}
-- Registros procesados: {VERDE}{len(df):,}{ENDC}
-- Variables creadas: {VERDE}7+ métricas de engagement{ENDC}
-
-PREGUNTAS DE INVESTIGACIÓN RESPONDIDAS:
-- Pregunta 1: Categorías de mayor tendencia: {VERDE}COMPLETADA{ENDC}
-- Pregunta 2: Categorías más/menos gustadas: {VERDE}COMPLETADA{ENDC}
-- Pregunta 3: Mejor ratio like/dislike: {VERDE}COMPLETADA{ENDC}
-- Pregunta 4: Mejor ratio views/comments: {VERDE}COMPLETADA{ENDC}
-- Pregunta 5: Cambio temporal del volumen: {VERDE}COMPLETADA{ENDC}
-- Pregunta 6: Canales más/menos frecuentes: {VERDE}COMPLETADA{ENDC}
-- Pregunta 7: Distribución geográfica: {VERDE}COMPLETADA{ENDC}
-- Pregunta 8: Comentarios vs tendencias: {VERDE}COMPLETADA{ENDC}
-- Pregunta 9: Factibilidad de predicción: {VERDE}COMPLETADA{ENDC}
 
 ANÁLISIS GEOGRÁFICO:
 - Mapa interactivo ratio like/dislike: {VERDE}Creado{ENDC}
@@ -1020,7 +977,7 @@ ARCHIVOS GENERADOS:
 - Gráficos PNG: {VERDE}Guardados en /data/graficos/{ENDC}
 - Datos procesados: {VERDE}Guardados en /data/processed/{ENDC}
 - Mapa HTML interactivo: {VERDE}Guardado en /data/outputs/{ENDC}
-
+""")
 
 
 if __name__ == "__main__":
