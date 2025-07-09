@@ -46,10 +46,10 @@ NOMBRES_PAISES = {
 }
 
 # Estructura de carpetas 
-CARPETA_DATOS = "./data/all-data"
-CARPETA_PROCESADOS = "./data/processed"
-CARPETA_SALIDAS = "./data/outputs"
-CARPETA_GRAFICOS = "./data/graficos"
+CARPETA_DATOS = "../data/all-data"
+CARPETA_PROCESADOS = "../data/processed"
+CARPETA_SALIDAS = "../data/outputs"
+CARPETA_GRAFICOS = "../data/graficos"
 
 # Crear directorios si no existen
 os.makedirs(CARPETA_PROCESADOS, exist_ok=True)
