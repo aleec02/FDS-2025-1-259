@@ -46,10 +46,10 @@ NOMBRES_PAISES = {
 }
 
 # Estructura de carpetas 
-CARPETA_DATOS = "../data/all-data"
-CARPETA_PROCESADOS = "../data/processed"
-CARPETA_SALIDAS = "../data/outputs"
-CARPETA_GRAFICOS = "../data/graficos"
+CARPETA_DATOS = "./data/all-data"
+CARPETA_PROCESADOS = "./data/processed"
+CARPETA_SALIDAS = "./data/outputs"
+CARPETA_GRAFICOS = "./data/graficos"
 
 # Crear directorios si no existen
 os.makedirs(CARPETA_PROCESADOS, exist_ok=True)
@@ -192,9 +192,7 @@ def guardar_datos_procesados(df, nombre_archivo, descripcion=""):
         return None
 
 
-# =============================
-# FUNCIÓN DE MAPA INTERACTIVO 
-# =============================
+# FN DE MAPA INTERACTIVO 
 
 def crear_mapa_ratio_like_dislike(df):
     """Crear mapa interactivo único para ratio like/dislike por estado"""
@@ -278,9 +276,7 @@ def crear_mapa_ratio_like_dislike(df):
     
     return geo_data
 
-# =======================
 # FUNCIONES DE ANÁLISIS 
-# =======================
 
 def pre1_categorias_tendencia(df):
     """Pregunta 1: Que categorías de videos son las de mayor tendencia?"""
@@ -622,7 +618,7 @@ def pre7_estados_vistas_interacciones(df):
         likes_m = estados_stats['likes'] / 1e6  
         dislikes_m = estados_stats['dislikes'] / 1e6
         
-        # Crear barras apiladas
+        # barras apiladas
         p1 = ax.bar(x, views_m, width, label='Vistas (M)', 
                    color='steelblue', alpha=0.8, edgecolor='darkblue', linewidth=1.2)
         p2 = ax.bar(x, likes_m, width, bottom=views_m, label='Likes (M)', 
@@ -741,127 +737,168 @@ def pre8_tendencia_vs_comentarios_positivos(df):
     correlacion = df['views'].corr(df['comment_count'])
     print(f"Correlación vistas-comentarios: {VERDE}{correlacion:.3f}{ENDC}")
 
+
+
 def pre9_prediccion_vistas_likes_dislikes(df):
-    """Pregunta 9: Es factible predecir el número de Vistas o Me gusta o No me gusta?"""
-    print(f"\n{AZUL}Pregunta 9: Es factible predecir el número de Vistas o Me gusta o No me gusta?{ENDC}")
-    
-    print(f"{AZUL}Preparando datos para modelado...{ENDC}")
-    
-    # Preparar features para predicción
-    features_numericas = ['likes', 'dislikes', 'comment_count', 'engagement_rate']
-    
-    # Limpiar datos para ML
-    df_ml = df.dropna(subset=features_numericas + ['views'])
-    df_ml = df_ml[df_ml['views'] > 0]
-    
-    X = df_ml[features_numericas]
-    y = df_ml['views']
-    
-    # Split train/test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    print(f"Conjunto de entrenamiento: {VERDE}{len(X_train):,}{ENDC} registros")
-    print(f"Conjunto de prueba: {VERDE}{len(X_test):,}{ENDC} registros")
-    
-    print(f"{AZUL}Entrenando modelos...{ENDC}")
-    
-    # Modelos
-    modelos = {
-        'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10),
-        'Linear Regression': LinearRegression()
-    }
-    
-    resultados_modelos = {}
-    
-    for nombre_modelo, modelo in modelos.items():
-        print(f"\nEntrenando {nombre_modelo}...")
-        
-        if nombre_modelo == 'Linear Regression':
-            scaler = StandardScaler()
-            X_train_scaled = scaler.fit_transform(X_train)
-            X_test_scaled = scaler.transform(X_test)
-            modelo.fit(X_train_scaled, y_train)
-            y_pred = modelo.predict(X_test_scaled)
-        else:
-            modelo.fit(X_train, y_train)
-            y_pred = modelo.predict(X_test)
-        
-        # Calcular métricas
-        mse = mean_squared_error(y_test, y_pred)
-        rmse = np.sqrt(mse)
-        mae = mean_absolute_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
-        
-        resultados_modelos[nombre_modelo] = {
-            'rmse': rmse,
-            'mae': mae,
-            'r2': r2,
-            'modelo': modelo
-        }
-        
-        color_r2 = VERDE if r2 > 0.5 else AZUL if r2 > 0.2 else AMARILLO
-        print(f"  RMSE: {AZUL}{rmse:,.0f}{ENDC}")
-        print(f"  MAE: {AZUL}{mae:,.0f}{ENDC}")
-        print(f"  R² Score: {color_r2}{r2:.3f}{ENDC}")
-    
-    if resultados_modelos:
-        fig, axes = plt.subplots(1, 2, figsize=(16, 6))
-        fig.suptitle(f'Resultados de Modelado Predictivo - Views - {NOMBRES_PAISES[CODIGO_PAIS]}', fontsize=16)
-        
-        for i, (nombre_modelo, datos) in enumerate(resultados_modelos.items()):
-            if i < 2:
-                # Obtener predicciones
-                if nombre_modelo == 'Linear Regression':
-                    y_pred_viz = datos['modelo'].predict(scaler.transform(X_test))
-                else:
-                    y_pred_viz = datos['modelo'].predict(X_test)
-                
-                # Scatter plot: Real vs Predicho
-                axes[i].scatter(y_test, y_pred_viz, alpha=0.6, color='blue')
-                
-                # Línea diagonal perfecta
-                min_val = min(y_test.min(), y_pred_viz.min())
-                max_val = max(y_test.max(), y_pred_viz.max())
-                axes[i].plot([min_val, max_val], [min_val, max_val], 'r--', alpha=0.8)
-                
-                axes[i].set_xlabel('Views Real')
-                axes[i].set_ylabel('Views Predicho')
-                axes[i].set_title(f'{nombre_modelo}\nR² = {datos["r2"]:.3f}')
-                axes[i].grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        filename = os.path.join(CARPETA_GRAFICOS, '09_prediccion_vistas_modelos.png')
-        plt.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
-        plt.close()
-    
-    print(f"\nGráfico guardado en: {MAGENTA}{filename}{ENDC}")
-    print("\nResultados de predicción de vistas:")
-    for nombre_modelo, datos in resultados_modelos.items():
-        print(f"  {nombre_modelo} - R²: {VERDE}{datos['r2']:.3f}{ENDC}, MAE: {VERDE}{datos['mae']/1e6:.2f}M{ENDC}")
-    
-    print(f"\n{SEPARADOR}")
-    print("RESPUESTA PREGUNTA 9")
-    print(f"{SEPARADOR}")
-    
-    mejor_r2 = max(modelo['r2'] for modelo in resultados_modelos.values())
-    
-    if mejor_r2 > 0.7:
-        factibilidad = "MUY FACTIBLE"
-        color = VERDE
-    elif mejor_r2 > 0.5:
-        factibilidad = "FACTIBLE"
-        color = VERDE
-    elif mejor_r2 > 0.3:
-        factibilidad = "PARCIALMENTE FACTIBLE"
-        color = AZUL
-    else:
-        factibilidad = "POCO FACTIBLE"
-        color = AMARILLO
-    
-    print(f"Predicción de VIEWS: {color}{factibilidad}{ENDC} (R² = {color}{mejor_r2:.3f}{ENDC})")
-    
-    mejor_modelo_nombre = max(resultados_modelos.items(), key=lambda x: x[1]['r2'])[0]
-    print(f"Mejor modelo: {VERDE}{mejor_modelo_nombre}{ENDC}")
+   """Pregunta 9: Es factible predecir el número de Vistas o Me gusta o No me gusta?"""
+   print(f"\n{AZUL}Pregunta 9: Es factible predecir el número de Vistas o Me gusta o No me gusta?{ENDC}")
+   
+   print(f"{AZUL}Preparando datos para modelado...{ENDC}")
+   
+   # Preparar features para predicción
+   features_numericas = ['likes', 'dislikes', 'comment_count', 'engagement_rate']
+   
+   # Limpiar datos para ML
+   df_ml = df.dropna(subset=features_numericas + ['views'])
+   df_ml = df_ml[df_ml['views'] > 0]
+   
+   X = df_ml[features_numericas]
+   y = df_ml['views']
+   
+   # Split train/test
+   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+   
+   print(f"Conjunto de entrenamiento: {VERDE}{len(X_train):,}{ENDC} registros")
+   print(f"Conjunto de prueba: {VERDE}{len(X_test):,}{ENDC} registros")
+   
+   print(f"{AZUL}Entrenando modelos...{ENDC}")
+   
+   # Modelos
+   modelos = {
+       'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42, max_depth=10),
+       'Linear Regression': LinearRegression()
+   }
+   
+   resultados_modelos = {}
+   scaler = None
+   
+   for nombre_modelo, modelo in modelos.items():
+       print(f"\nEntrenando {nombre_modelo}...")
+       
+       if nombre_modelo == 'Linear Regression':
+           scaler = StandardScaler()
+           print("  Escalando datos...")
+           X_train_scaled = scaler.fit_transform(X_train)
+           X_test_scaled = scaler.transform(X_test)
+           print("  Entrenando modelo de regresión lineal...")
+           modelo.fit(X_train_scaled, y_train)
+           print("  Realizando predicciones...")
+           y_pred = modelo.predict(X_test_scaled)
+       else:
+           # Random Forest with progress tracking
+           print("  Entrenando Random Forest (100 árboles)...")
+           with tqdm(total=100, desc="  Progreso entrenamiento", leave=False) as pbar:
+               modelo.fit(X_train, y_train)
+               pbar.update(100)  # Complete the bar after training
+           
+           print("  Realizando predicciones...")
+           y_pred = modelo.predict(X_test)
+       
+       # Calcular métricas
+       mse = mean_squared_error(y_test, y_pred)
+       rmse = np.sqrt(mse)
+       mae = mean_absolute_error(y_test, y_pred)
+       r2 = r2_score(y_test, y_pred)
+       
+       resultados_modelos[nombre_modelo] = {
+           'rmse': rmse,
+           'mae': mae,
+           'r2': r2,
+           'modelo': modelo,
+           'scaler': scaler if nombre_modelo == 'Linear Regression' else None
+       }
+       
+       color_r2 = VERDE if r2 > 0.5 else AZUL if r2 > 0.2 else AMARILLO
+       print(f"  RMSE: {AZUL}{rmse:,.0f}{ENDC}")
+       print(f"  MAE: {AZUL}{mae:,.0f}{ENDC}")
+       print(f"  R² Score: {color_r2}{r2:.3f}{ENDC}")
+   
+   if resultados_modelos:
+       fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+       fig.suptitle(f'Resultados de Modelado Predictivo - Views - {NOMBRES_PAISES[CODIGO_PAIS]}', fontsize=16)
+       
+       for i, (nombre_modelo, datos) in enumerate(resultados_modelos.items()):
+           if i < 2:
+               # Obtener predicciones
+               if nombre_modelo == 'Linear Regression':
+                   y_pred_viz = datos['modelo'].predict(datos['scaler'].transform(X_test))
+               else:
+                   y_pred_viz = datos['modelo'].predict(X_test)
+               
+               # Scatter plot: Real vs Predicho
+               axes[i].scatter(y_test, y_pred_viz, alpha=0.6, color='blue')
+               
+               # Línea diagonal perfecta
+               min_val = min(y_test.min(), y_pred_viz.min())
+               max_val = max(y_test.max(), y_pred_viz.max())
+               axes[i].plot([min_val, max_val], [min_val, max_val], 'r--', alpha=0.8)
+               
+               axes[i].set_xlabel('Views Real')
+               axes[i].set_ylabel('Views Predicho')
+               axes[i].set_title(f'{nombre_modelo}\nR² = {datos["r2"]:.3f}')
+               axes[i].grid(True, alpha=0.3)
+       
+       plt.tight_layout()
+       filename = os.path.join(CARPETA_GRAFICOS, '09_prediccion_vistas_modelos.png')
+       plt.savefig(filename, dpi=300, bbox_inches='tight', facecolor='white')
+       plt.close()
+   
+   print(f"\nGráfico guardado en: {MAGENTA}{filename}{ENDC}")
+   print("\nResultados de predicción de vistas:")
+   for nombre_modelo, datos in resultados_modelos.items():
+       print(f"  {nombre_modelo} - R²: {VERDE}{datos['r2']:.3f}{ENDC}, MAE: {VERDE}{datos['mae']/1e6:.2f}M{ENDC}")
+   
+   print(f"\n{SEPARADOR}")
+   print("RESPUESTA PREGUNTA 9")
+   print(f"{SEPARADOR}")
+   
+   mejor_r2 = max(modelo['r2'] for modelo in resultados_modelos.values())
+   
+   if mejor_r2 > 0.7:
+       factibilidad = "MUY FACTIBLE"
+       color = VERDE
+   elif mejor_r2 > 0.5:
+       factibilidad = "FACTIBLE"
+       color = VERDE
+   elif mejor_r2 > 0.3:
+       factibilidad = "PARCIALMENTE FACTIBLE"
+       color = AZUL
+   else:
+       factibilidad = "POCO FACTIBLE"
+       color = AMARILLO
+   
+   print(f"Predicción de VIEWS: {color}{factibilidad}{ENDC} (R² = {color}{mejor_r2:.3f}{ENDC})")
+   
+   # GET both the name AND the model object
+   mejor_modelo_nombre, mejor_modelo_data = max(resultados_modelos.items(), key=lambda x: x[1]['r2'])
+   mejor_modelo = mejor_modelo_data['modelo']
+   mejor_scaler = mejor_modelo_data['scaler']
+   
+   print(f"Mejor modelo: {VERDE}{mejor_modelo_nombre}{ENDC}")
+   
+   # 3. Predecir sobre test
+   if mejor_modelo_nombre == 'Linear Regression':
+       y_pred = mejor_modelo.predict(mejor_scaler.transform(X_test))
+   else:
+       y_pred = mejor_modelo.predict(X_test)
+   
+   # 4. Calcular residuos
+   residuals = y_test - y_pred
+   
+   # 5. Graficar residuos vs valores predichos
+   plt.figure(figsize=(8, 5))
+   sns.scatterplot(x=y_pred, y=residuals)
+   plt.axhline(0, color='red', linestyle='--')
+   plt.xlabel('Predicciones')
+   plt.ylabel('Residuales (Error)')
+   plt.title(f'Gráfico de Residuales ({mejor_modelo_nombre})')
+   filename = os.path.join(CARPETA_GRAFICOS, '09_residual.png')
+   plt.savefig(filename, dpi=300, bbox_inches='tight')
+   plt.close()
+   
+   print(f"Gráfico de residuales guardado en: {MAGENTA}{filename}{ENDC}")
+
+
 
 
 def main():
